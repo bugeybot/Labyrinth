@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<!-- saved from url=(0047)https://www.google.com/_/chrome/newtab?ie=UTF-8 -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Labyrith</title>
+
+<script src="./Labyrith_files/jquery.min.js.download"></script>
+
+<script type="text/javascript" src="./Labyrith_files/chs.js.download"></script>
+
+
+<style>
+canvas {
+    border: 1px solid black;
+    display: inline-block;
+    vertical-align: top;
+}
+
+pre {
+    border: 1px solid black;
+    display: inline-block;
+    width: 400px;
+    height: 500px;
+    background-color: #F5F5F5;
+}
+</style>
+
+</head>
+
+<body>
+<h1>Labyrith</h1>
+
+
+
+<canvas width="400" height="500" class="codehs-editor-canvas"></canvas>
+<pre id="console"></pre>
+
+<script>
+window.onload = function() {
+
+    //Code For Labyrinth
+
+                //number of monsters in a room
+                var NUM_MONSTERS = 5;
+
+                //returns 0 or 1 for enemy types (land or fly)
+                var enemyTypes = [];
+
+                //coordinate of object(s)
+                var monsterCoords = {};
+                var playerCoords = {};
+                var blocksCoords = {};
+
+                //establishing hitbox creations
+                var blocks;
+                var player;
+
+                //can fly over blocks or not
+                var enemyTypeBlockCapablities = [];
+
+                //what to do IF land & needs to go around blocks
+                var dUOP = [];
+                var definiteUpOrDown = 0;
+                var dROP = [];
+                var definiteRightOrLeft = 0;
+
+                // area visual
+                
+                var basic = [];
+
+                var cobalt = Color.createFromRGB(0, 28, 67);
+
+                var basicArea = new Rectangle(getWidth(), getWidth());
+
+                basicArea.setPosition(0, getHeight() - getWidth());
+
+                basicArea.setColor(cobalt);
+
+                var basicFloor = new Rectangle(basicArea.getWidth() - (2 * (basicArea.getWidth() / 8)),
+                    basicArea.getWidth() - (2 * (basicArea.getWidth() / 8)));
+
+                basicFloor.setPosition(basicArea.getX() + (basicArea.getWidth() / 8),
+                    basicArea.getY() + (basicArea.getWidth() / 8));
+
+                var basicFloor2 = new Rectangle(basicFloor.getWidth() - (2 * (basicFloor.getWidth() / 100)),
+                    basicFloor.getWidth() - (2 * (basicFloor.getWidth() / 100)));
+
+                basicFloor2.setPosition(basicFloor.getX() + (basicFloor.getWidth() / 100),
+                    basicFloor.getY() + (basicFloor.getWidth() / 100));
+
+                basicFloor2.setColor(cobalt);
+
+                var basicDiagLine1 = new Line(basicArea.getX(), basicArea.getY(), basicFloor.getX(), basicFloor.getY());
+
+                var basicDiagLine2 = new Line(basicArea.getX() + basicArea.getWidth(), basicArea.getY(),
+                    basicFloor.getX() + basicFloor.getWidth(), basicFloor.getY());
+
+                var basicDiagLine3 = new Line(basicArea.getX() + basicArea.getWidth(), basicArea.getY() + basicArea.getWidth(),
+                    basicFloor.getX() + basicFloor.getWidth(), basicFloor.getY() + basicFloor.getWidth());
+
+                var basicDiagLine4 = new Line(basicArea.getX(), basicArea.getY() + basicArea.getWidth(),
+                    basicFloor.getX(), basicFloor.getY() + basicFloor.getWidth());
+
+                var basicVerticalLine1 = new Line(basicFloor2.getX() + (basicFloor2.getWidth() / 7),
+                    basicFloor2.getY(), basicFloor2.getX() + (basicFloor2.getWidth() / 7), basicFloor2.getY() + basicFloor2.getWidth());
+
+                var basicVerticalLine2 = new Line(basicVerticalLine1.getX() + (basicFloor2.getWidth() / 7),
+                    basicFloor2.getY(), basicVerticalLine1.getX() + (basicFloor2.getWidth() / 7), basicFloor2.getY() +
+                    basicFloor2.getWidth());
+
+                var basicVerticalLine3 = new Line(basicVerticalLine2.getX() + (basicFloor2.getWidth() / 7),
+                    basicFloor2.getY(), basicVerticalLine2.getX() + (basicFloor2.getWidth() / 7), basicFloor2.getY() +
+                    basicFloor2.getWidth());
+
+                var basicVerticalLine4 = new Line(basicVerticalLine3.getX() + (basicFloor2.getWidth() / 7),
+                    basicFloor2.getY(), basicVerticalLine3.getX() + (basicFloor2.getWidth() / 7), basicFloor2.getY() +
+                    basicFloor2.getWidth());
+
+                var basicVerticalLine5 = new Line(basicVerticalLine4.getX() + (basicFloor2.getWidth() / 7),
+                    basicFloor2.getY(), basicVerticalLine4.getX() + (basicFloor2.getWidth() / 7), basicFloor2.getY() +
+                    basicFloor2.getWidth());
+
+                var basicVerticalLine6 = new Line(basicVerticalLine5.getX() + (basicFloor2.getWidth() / 7),
+                    basicFloor2.getY(), basicVerticalLine5.getX() + (basicFloor2.getWidth() / 7), basicFloor2.getY() +
+                    basicFloor2.getWidth());
+
+                var basicHorizLine1 = new Line(basicFloor2.getX(), basicFloor2.getY() + (basicFloor2.getWidth() / 7),
+                    basicFloor2.getX() + basicFloor2.getWidth(), basicFloor2.getY() + (basicFloor2.getWidth() / 7));
+
+                var basicHorizLine2 = new Line(basicFloor2.getX(), basicHorizLine1.getY() + (basicFloor2.getWidth() / 7),
+                    basicFloor2.getX() + basicFloor2.getWidth(), basicHorizLine1.getY() + (basicFloor2.getWidth() / 7));
+
+                var basicHorizLine3 = new Line(basicFloor2.getX(), basicHorizLine2.getY() + (basicFloor2.getWidth() / 7),
+                    basicFloor2.getX() + basicFloor2.getWidth(), basicHorizLine2.getY() + (basicFloor2.getWidth() / 7));
+
+                var basicHorizLine4 = new Line(basicFloor2.getX(), basicHorizLine3.getY() + (basicFloor2.getWidth() / 7),
+                    basicFloor2.getX() + basicFloor2.getWidth(), basicHorizLine3.getY() + (basicFloor2.getWidth() / 7));
+
+                var basicHorizLine5 = new Line(basicFloor2.getX(), basicHorizLine4.getY() + (basicFloor2.getWidth() / 7),
+                    basicFloor2.getX() + basicFloor2.getWidth(), basicHorizLine4.getY() + (basicFloor2.getWidth() / 7));
+
+                var basicHorizLine6 = new Line(basicFloor2.getX(), basicHorizLine5.getY() + (basicFloor2.getWidth() / 7),
+                    basicFloor2.getX() + basicFloor2.getWidth(), basicHorizLine5.getY() + (basicFloor2.getWidth() / 7));
+
+                var basicWestDoorOutline = new Rectangle(basicArea.getWidth() / 8, (basicFloor2.getWidth() / 7) +
+                    (2 * (basicFloor2.getWidth() / 56)));
+
+                basicWestDoorOutline.setPosition(basicFloor2.getX() - basicWestDoorOutline.getWidth(),
+                    basicHorizLine3.getY() - (basicFloor2.getWidth() / 56));
+
+                basicWestDoorOutline.setColor(cobalt);
+
+                basicWestDoorOutline.setBorder(true);
+
+                basicWestDoorOutline.setBorderWidth(2);
+
+                var basicWestDoor = new Rectangle(basicFloor2.getWidth() / 7, basicFloor2.getWidth() / 7);
+
+                basicWestDoor.setPosition(basicFloor2.getX() - basicWestDoor.getWidth(),
+                    basicHorizLine3.getY());
+
+                var basicEastDoorOutline = new Rectangle(basicArea.getWidth() / 8, (basicFloor2.getWidth() / 7) +
+                    (2 * (basicFloor2.getWidth() / 56)));
+
+                basicEastDoorOutline.setPosition(basicVerticalLine6.getX() + basicFloor2.getWidth() / 7,
+                    basicHorizLine3.getY() - (basicFloor2.getWidth() / 56));
+
+                basicEastDoorOutline.setColor(cobalt);
+
+                basicEastDoorOutline.setBorder(true);
+
+                basicEastDoorOutline.setBorderWidth(2);
+
+                var basicEastDoor = new Rectangle(basicFloor2.getWidth() / 7, basicFloor2.getWidth() / 7);
+
+                basicEastDoor.setPosition(basicEastDoorOutline.getX(), basicHorizLine3.getY());
+
+                var basicNorthDoorOutline = new Rectangle((basicFloor2.getWidth() / 7) +
+                    (2 * (basicFloor2.getWidth() / 56)), basicArea.getWidth() / 8);
+
+                basicNorthDoorOutline.setPosition(basicVerticalLine3.getX() - (basicFloor2.getWidth() / 56), basicFloor2.getY() - basicNorthDoorOutline.getHeight());
+
+                basicNorthDoorOutline.setColor(cobalt);
+
+                basicNorthDoorOutline.setBorder(true);
+
+                basicNorthDoorOutline.setBorderWidth(2);
+
+                var basicNorthDoor = new Rectangle(basicFloor2.getWidth() / 7, basicFloor2.getWidth() / 7);
+
+                basicNorthDoor.setPosition(basicVerticalLine3.getX(), basicFloor2.getY() - basicNorthDoor.getWidth());
+
+                var basicSouthDoorOutline = new Rectangle((basicFloor2.getWidth() / 7) +
+                    (2 * (basicFloor2.getWidth() / 56)), basicArea.getWidth() / 8);
+
+                basicSouthDoorOutline.setPosition(basicVerticalLine3.getX() - (basicFloor2.getWidth() / 56), basicFloor2.getY() + basicFloor2.getHeight());
+
+                basicSouthDoorOutline.setColor(cobalt);
+
+                basicSouthDoorOutline.setBorder(true);
+
+                basicSouthDoorOutline.setBorderWidth(2);
+
+                var basicSouthDoor = new Rectangle(basicFloor2.getWidth() / 7, basicFloor2.getWidth() / 7);
+
+                basicSouthDoor.setPosition(basicVerticalLine3.getX(), basicFloor2.getY() + basicFloor2.getWidth());
+
+                // center rooms
+
+                basic.push(basicArea);
+                basic.push(basicWestDoorOutline);
+                basic.push(basicWestDoor);
+                basic.push(basicEastDoorOutline);
+                basic.push(basicEastDoor);
+                basic.push(basicNorthDoorOutline);
+                basic.push(basicNorthDoor);
+                basic.push(basicSouthDoorOutline);
+                basic.push(basicSouthDoor);
+                basic.push(basicFloor);
+                basic.push(basicFloor2);
+                basic.push(basicDiagLine1);
+                basic.push(basicDiagLine2);
+                basic.push(basicDiagLine3);
+                basic.push(basicDiagLine4);
+                basic.push(basicVerticalLine1);
+                basic.push(basicVerticalLine2);
+                basic.push(basicVerticalLine3);
+                basic.push(basicVerticalLine4);
+                basic.push(basicVerticalLine5);
+                basic.push(basicVerticalLine6);
+                basic.push(basicHorizLine1);
+                basic.push(basicHorizLine2);
+                basic.push(basicHorizLine3);
+                basic.push(basicHorizLine4);
+                basic.push(basicHorizLine5);
+                basic.push(basicHorizLine6);
+
+                // room in top left corner
+
+                var basicTopLeftRoom = [];
+                basicTopLeftRoom.push(basicArea);
+                basicTopLeftRoom.push(basicEastDoorOutline);
+                basicTopLeftRoom.push(basicEastDoor);
+                basicTopLeftRoom.push(basicSouthDoorOutline);
+                basicTopLeftRoom.push(basicSouthDoor);
+                basicTopLeftRoom.push(basicFloor);
+                basicTopLeftRoom.push(basicFloor2);
+                basicTopLeftRoom.push(basicDiagLine1);
+                basicTopLeftRoom.push(basicDiagLine2);
+                basicTopLeftRoom.push(basicDiagLine3);
+                basicTopLeftRoom.push(basicDiagLine4);
+                basicTopLeftRoom.push(basicVerticalLine1);
+                basicTopLeftRoom.push(basicVerticalLine2);
+                basicTopLeftRoom.push(basicVerticalLine3);
+                basicTopLeftRoom.push(basicVerticalLine4);
+                basicTopLeftRoom.push(basicVerticalLine5);
+                basicTopLeftRoom.push(basicVerticalLine6);
+                basicTopLeftRoom.push(basicHorizLine1);
+                basicTopLeftRoom.push(basicHorizLine2);
+                basicTopLeftRoom.push(basicHorizLine3);
+                basicTopLeftRoom.push(basicHorizLine4);
+                basicTopLeftRoom.push(basicHorizLine5);
+                basicTopLeftRoom.push(basicHorizLine6);
+
+                // room in top right corner
+
+                var basicTopRightRoom = [];
+                basicTopRightRoom.push(basicArea);
+                basicTopRightRoom.push(basicWestDoorOutline);
+                basicTopRightRoom.push(basicWestDoor);
+                basicTopRightRoom.push(basicSouthDoorOutline);
+                basicTopRightRoom.push(basicSouthDoor);
+                basicTopRightRoom.push(basicFloor);
+                basicTopRightRoom.push(basicFloor2);
+                basicTopRightRoom.push(basicDiagLine1);
+                basicTopRightRoom.push(basicDiagLine2);
+                basicTopRightRoom.push(basicDiagLine3);
+                basicTopRightRoom.push(basicDiagLine4);
+                basicTopRightRoom.push(basicVerticalLine1);
+                basicTopRightRoom.push(basicVerticalLine2);
+                basicTopRightRoom.push(basicVerticalLine3);
+                basicTopRightRoom.push(basicVerticalLine4);
+                basicTopRightRoom.push(basicVerticalLine5);
+                basicTopRightRoom.push(basicVerticalLine6);
+                basicTopRightRoom.push(basicHorizLine1);
+                basicTopRightRoom.push(basicHorizLine2);
+                basicTopRightRoom.push(basicHorizLine3);
+                basicTopRightRoom.push(basicHorizLine4);
+                basicTopRightRoom.push(basicHorizLine5);
+                basicTopRightRoom.push(basicHorizLine6);
+
+                // room in bottom right corner
+
+                var basicBottomRightRoom = [];
+                basicBottomRightRoom.push(basicArea);
+                basicBottomRightRoom.push(basicWestDoorOutline);
+                basicBottomRightRoom.push(basicWestDoor);
+                basicBottomRightRoom.push(basicNorthDoorOutline);
+                basicBottomRightRoom.push(basicNorthDoor);
+                basicBottomRightRoom.push(basicFloor);
+                basicBottomRightRoom.push(basicFloor2);
+                basicBottomRightRoom.push(basicDiagLine1);
+                basicBottomRightRoom.push(basicDiagLine2);
+                basicBottomRightRoom.push(basicDiagLine3);
+                basicBottomRightRoom.push(basicDiagLine4);
+                basicBottomRightRoom.push(basicVerticalLine1);
+                basicBottomRightRoom.push(basicVerticalLine2);
+                basicBottomRightRoom.push(basicVerticalLine3);
+                basicBottomRightRoom.push(basicVerticalLine4);
+                basicBottomRightRoom.push(basicVerticalLine5);
+                basicBottomRightRoom.push(basicVerticalLine6);
+                basicBottomRightRoom.push(basicHorizLine1);
+                basicBottomRightRoom.push(basicHorizLine2);
+                basicBottomRightRoom.push(basicHorizLine3);
+                basicBottomRightRoom.push(basicHorizLine4);
+                basicBottomRightRoom.push(basicHorizLine5);
+                basicBottomRightRoom.push(basicHorizLine6);
+
+                // room in bottom left corner
+
+                var basicBottomLeftRoom = [];
+                basicBottomLeftRoom.push(basicArea);
+                basicBottomLeftRoom.push(basicEastDoorOutline);
+                basicBottomLeftRoom.push(basicEastDoor);
+                basicBottomLeftRoom.push(basicNorthDoorOutline);
+                basicBottomLeftRoom.push(basicNorthDoor);
+                basicBottomLeftRoom.push(basicFloor);
+                basicBottomLeftRoom.push(basicFloor2);
+                basicBottomLeftRoom.push(basicDiagLine1);
+                basicBottomLeftRoom.push(basicDiagLine2);
+                basicBottomLeftRoom.push(basicDiagLine3);
+                basicBottomLeftRoom.push(basicDiagLine4);
+                basicBottomLeftRoom.push(basicVerticalLine1);
+                basicBottomLeftRoom.push(basicVerticalLine2);
+                basicBottomLeftRoom.push(basicVerticalLine3);
+                basicBottomLeftRoom.push(basicVerticalLine4);
+                basicBottomLeftRoom.push(basicVerticalLine5);
+                basicBottomLeftRoom.push(basicVerticalLine6);
+                basicBottomLeftRoom.push(basicHorizLine1);
+                basicBottomLeftRoom.push(basicHorizLine2);
+                basicBottomLeftRoom.push(basicHorizLine3);
+                basicBottomLeftRoom.push(basicHorizLine4);
+                basicBottomLeftRoom.push(basicHorizLine5);
+                basicBottomLeftRoom.push(basicHorizLine6);
+
+                // rooms on top row
+
+                var basicTopRoom = [];
+                basicTopRoom.push(basicArea);
+                basicTopRoom.push(basicWestDoorOutline);
+                basicTopRoom.push(basicWestDoor);
+                basicTopRoom.push(basicEastDoorOutline);
+                basicTopRoom.push(basicEastDoor);
+                basicTopRoom.push(basicSouthDoorOutline);
+                basicTopRoom.push(basicSouthDoor);
+                basicTopRoom.push(basicFloor);
+                basicTopRoom.push(basicFloor2);
+                basicTopRoom.push(basicDiagLine1);
+                basicTopRoom.push(basicDiagLine2);
+                basicTopRoom.push(basicDiagLine3);
+                basicTopRoom.push(basicDiagLine4);
+                basicTopRoom.push(basicVerticalLine1);
+                basicTopRoom.push(basicVerticalLine2);
+                basicTopRoom.push(basicVerticalLine3);
+                basicTopRoom.push(basicVerticalLine4);
+                basicTopRoom.push(basicVerticalLine5);
+                basicTopRoom.push(basicVerticalLine6);
+                basicTopRoom.push(basicHorizLine1);
+                basicTopRoom.push(basicHorizLine2);
+                basicTopRoom.push(basicHorizLine3);
+                basicTopRoom.push(basicHorizLine4);
+                basicTopRoom.push(basicHorizLine5);
+                basicTopRoom.push(basicHorizLine6);
+
+                // rooms on bottom row
+
+                var basicBottomRoom = [];
+                basic.push(basicArea);
+                basic.push(basicWestDoorOutline);
+                basic.push(basicWestDoor);
+                basic.push(basicEastDoorOutline);
+                basic.push(basicEastDoor);
+                basic.push(basicNorthDoorOutline);
+                basic.push(basicNorthDoor);
+                basic.push(basicSouthDoorOutline);
+                basic.push(basicSouthDoor);
+                basic.push(basicFloor);
+                basic.push(basicFloor2);
+                basic.push(basicDiagLine1);
+                basic.push(basicDiagLine2);
+                basic.push(basicDiagLine3);
+                basic.push(basicDiagLine4);
+                basic.push(basicVerticalLine1);
+                basic.push(basicVerticalLine2);
+                basic.push(basicVerticalLine3);
+                basic.push(basicVerticalLine4);
+                basic.push(basicVerticalLine5);
+                basic.push(basicVerticalLine6);
+                basic.push(basicHorizLine1);
+                basic.push(basicHorizLine2);
+                basic.push(basicHorizLine3);
+                basic.push(basicHorizLine4);
+                basic.push(basicHorizLine5);
+                basic.push(basicHorizLine6);
+                // rooms on left most column
+
+                var basicLeftBorder = [];
+                basic.push(basicArea);
+                basic.push(basicWestDoorOutline);
+                basic.push(basicWestDoor);
+                basic.push(basicEastDoorOutline);
+                basic.push(basicEastDoor);
+                basic.push(basicNorthDoorOutline);
+                basic.push(basicNorthDoor);
+                basic.push(basicSouthDoorOutline);
+                basic.push(basicSouthDoor);
+                basic.push(basicFloor);
+                basic.push(basicFloor2);
+                basic.push(basicDiagLine1);
+                basic.push(basicDiagLine2);
+                basic.push(basicDiagLine3);
+                basic.push(basicDiagLine4);
+                basic.push(basicVerticalLine1);
+                basic.push(basicVerticalLine2);
+                basic.push(basicVerticalLine3);
+                basic.push(basicVerticalLine4);
+                basic.push(basicVerticalLine5);
+                basic.push(basicVerticalLine6);
+                basic.push(basicHorizLine1);
+                basic.push(basicHorizLine2);
+                basic.push(basicHorizLine3);
+                basic.push(basicHorizLine4);
+                basic.push(basicHorizLine5);
+                basic.push(basicHorizLine6);
+                // rooms on right most column
+
+                var basicRightBorder = [];
+                basicRightBorder.push(basicArea);
+                basicRightBorder.push(basicWestDoorOutline);
+                basicRightBorder.push(basicWestDoor);
+                basicRightBorder.push(basicNorthDoorOutline);
+                basicRightBorder.push(basicNorthDoor);
+                basicRightBorder.push(basicSouthDoorOutline);
+                basicRightBorder.push(basicSouthDoor);
+                basicRightBorder.push(basicFloor);
+                basicRightBorder.push(basicFloor2);
+                basicRightBorder.push(basicDiagLine1);
+                basicRightBorder.push(basicDiagLine2);
+                basicRightBorder.push(basicDiagLine3);
+                basicRightBorder.push(basicDiagLine4);
+                basicRightBorder.push(basicVerticalLine1);
+                basicRightBorder.push(basicVerticalLine2);
+                basicRightBorder.push(basicVerticalLine3);
+                basicRightBorder.push(basicVerticalLine4);
+                basicRightBorder.push(basicVerticalLine5);
+                basicRightBorder.push(basicVerticalLine6);
+                basicRightBorder.push(basicHorizLine1);
+                basicRightBorder.push(basicHorizLine2);
+                basicRightBorder.push(basicHorizLine3);
+                basicRightBorder.push(basicHorizLine4);
+                basicRightBorder.push(basicHorizLine5);
+                basicRightBorder.push(basicHorizLine6);
+                //Grid
+                var labyrith = new Grid(7, 7);
+                for (var rows = 0; rows < labyrith.numRows(); rows++) {
+                    for (var cols = 0; cols < labyrith.numCols(); cols++) {
+                        if ((rows > 0 && rows < labyrith.numRows() - 1) && (cols > 0 && cols <
+                                labyrith.numCols() - 1)) {
+                            labyrith.set(rows, cols, basic);
+                        }
+                        if (rows == 0 && (cols > 0 && cols < labyrith.numCols() - 1)) {
+                            labyrith.set(rows, cols, basicTopRoom);
+                        }
+                        if (rows == labyrith.numRows() - 1 && (cols > 0 && cols < labyrith.numCols() - 1)) {
+                            labyrith.set(rows, cols, basicBottomRoom);
+                        }
+                        if (rows == 0 && cols == 0) {
+                            labyrith.set(rows, cols, basicTopLeftRoom);
+                        }
+                        //if()
+                    }
+                }
+
+                //the rates at which things move
+                var MONSTER_RATE = (basicFloor2.getWidth() / 7) / 2;
+                var PLAYER_RATE = (basicFloor2.getWidth() / 7) / 2;
+
+                //can change the box's width/height
+                var BOX_MEASUREMENTS = basicFloor2.getWidth() / 7;
+
+                //hitboxes
+                var PLAYER_HITBOX = basicFloor2.getWidth() / 7;
+                var MONSTER_HITBOX = basicFloor2.getWidth() / 7;
+
+                // Goblin visual
+                var goblin
+
+                    function start() {
+                        createVisuals(basic);
+                        //boxCreation(basicFloor2.getX() + (basicFloor2.getWidth() / 7) * 3, basicFloor2.getY() + (basicFloor2.getWidth() / 7) * 3);
+                        //playerCreate(basicFloor2.getX() - basicFloor2.getWidth() / 7, basicFloor2.getY() + (basicFloor2.getWidth() / 7) * 3);
+                        //enemyTypes = chooseEnemies();
+                        //enemyPrint(enemyTypes);
+                        //keyDownMethod(keyDown);
+                        //setTimer(enemyMovement, 1000);
+
+                    }
+
+                    function checkNextSpaceForOtherEnemies(number, x, y, array) {
+                        /*
+    Constants:
+    checks to see if x and y overlap with an existing entity
+    Actions if True:
+    returns 1; else returns 0 (meaning false)
+    */
+                        for (var i = 0; i < array.length; i++) {
+                            if (i != number) {
+                                if (x == monsterCoords[i + "x"] && y == monsterCoords[i + "y"]) {
+                                    return 1;
+                                } else if (x == playerCoords["x"] && y == playerCoords["y"]) {
+                                    return 1;
+                                } else {
+                                    return 0;
+                                }
+                            }
+                        }
+                    }
+
+                    function createVisuals(array) {
+                        /*
+    Actions:
+    when given an array of graphics it wiil add them on the screen
+    */
+                        for (var i = 0; i < array.length; i++) {
+                            add(array[i]);
+                        }
+                    }
+
+                    function keyDown(e) {
+                        var curY = playerCoords["y"];
+                        var curX = playerCoords["x"];
+                        if (e.keyCode == Keyboard.DOWN || e.keyCode == Keyboard.letter('S')) {
+                            curY += PLAYER_RATE * 2;
+                            if (wallCheck(curX, curY, PLAYER_HITBOX) == 0 && blockCheck(curX, curY) == 0) {
+                                playerCoords["y"] = curY;
+                                player.setPosition(-PLAYER_RATE, 0);
+                                add(player);
+                            } else {
+                                curY -= PLAYER_RATE * 2;
+                            }
+                        }
+                        if (e.keyCode == Keyboard.UP || e.keyCode == Keyboard.letter('W')) {
+                            curY -= PLAYER_RATE * 2;
+                            if (wallCheck(curX, curY, PLAYER_HITBOX) == 0 && blockCheck(curX, curY) == 0) {
+                                playerCoords["y"] = curY;
+                                player.setPosition(0, PLAYER_RATE);
+                                add(player);
+                            } else {
+                                curY += PLAYER_RATE * 2;
+                            }
+                        }
+                        if (e.keyCode == Keyboard.LEFT || e.keyCode == Keyboard.letter('A')) {
+                            curX -= PLAYER_RATE * 2;
+                            if (wallCheck(curX, curY, PLAYER_HITBOX) == 0 && blockCheck(curX, curY) == 0) {
+                                playerCoords["x"] = curX;
+                                player.move(-PLAYER_RATE, 0);
+                                add(player);
+                            } else {
+                                curX += PLAYER_RATE * 2;
+                            }
+                        }
+                        if (e.keyCode == Keyboard.RIGHT || e.keyCode == Keyboard.letter('D')) {
+                            curX += PLAYER_RATE * 2;
+                            if (wallCheck(curX, curY, PLAYER_HITBOX) == 0 && blockCheck(curX, curY) == 0) {
+                                playerCoords["x"] = curX;
+                                player.setPosition(PLAYER_RATE, 0);
+                                add(player);
+                            } else {
+                                curX -= PLAYER_RATE * 2;
+                            }
+                        }
+
+                    }
+
+                    function enemyMovement() {
+                        /*
+    Actions:
+    moves enemies to player coords by a rate of MONSTER_RATE
+    */
+                        for (var i = 0; i < enemyTypes.length; i++) {
+                            var xEnemy = monsterCoords[i + "x"];
+                            var yEnemy = monsterCoords[i + "y"];
+                            var xPlayer = playerCoords["x"];
+                            var yPlayer = playerCoords["y"];
+
+                            definiteUpOrDown = dUOP[i + " status"];
+                            definiteRightOrLeft = dROP[i + " status"];
+
+                            var changed = 0;
+
+                            //fly
+                            if (enemyTypeBlockCapablities[i] == "fly") {
+                                if (xEnemy < xPlayer && checkNextSpaceForOtherEnemies(i, xEnemy + MONSTER_RATE, yEnemy, enemyTypeBlockCapablities) == 0) {
+                                    xEnemy += MONSTER_RATE;
+                                    if (wallCheck(xEnemy, yEnemy, MONSTER_HITBOX) == 1) {
+                                        xEnemy -= MONSTER_RATE;
+                                    }
+                                } else if (xEnemy > xPlayer && checkNextSpaceForOtherEnemies(i, xEnemy - MONSTER_RATE, yEnemy, enemyTypeBlockCapablities) == 0) {
+                                    xEnemy -= MONSTER_RATE;
+                                    if (wallCheck(xEnemy, yEnemy, MONSTER_HITBOX) == 1) {
+                                        xEnemy += MONSTER_RATE;
+                                    }
+                                } else if (yEnemy < yPlayer && checkNextSpaceForOtherEnemies(i, xEnemy, yEnemy + MONSTER_RATE, enemyTypeBlockCapablities) == 0) {
+                                    yEnemy += MONSTER_RATE;
+                                    if (wallCheck(xEnemy, yEnemy, MONSTER_HITBOX) == 1) {
+                                        yEnemy -= MONSTER_RATE;
+                                    }
+                                } else if (yEnemy > yPlayer && checkNextSpaceForOtherEnemies(i, xEnemy, yEnemy - MONSTER_RATE, enemyTypeBlockCapablities) == 0) {
+                                    yEnemy -= MONSTER_RATE;
+                                    if (wallCheck(xEnemy, yEnemy, MONSTER_HITBOX) == 1) {
+                                        yEnemy += MONSTER_RATE;
+                                    }
+                                }
+                            }
+
+                            //land
+                            if (enemyTypeBlockCapablities[i] == "land") {
+                                //dUOP & dROP only happen w/ a block in the way
+                                if (definiteUpOrDown == 1) {
+                                    if (yEnemy < yPlayer && blockCheck(xEnemy, yEnemy + MONSTER_RATE) == 0 && checkNextSpaceForOtherEnemies(i, xEnemy, yEnemy + MONSTER_RATE, enemyTypeBlockCapablities) == 0 && wallCheck(xEnemy, yEnemy + MONSTER_RATE, MONSTER_HITBOX) == 0) {
+                                        yEnemy += MONSTER_RATE;
+                                        definiteUpOrDown = 0;
+                                        changed = 1;
+                                    } else if (yEnemy > yPlayer && blockCheck(xEnemy, yEnemy - MONSTER_RATE) == 0 && checkNextSpaceForOtherEnemies(i, xEnemy, yEnemy - MONSTER_RATE, enemyTypeBlockCapablities) == 0 && wallCheck(xEnemy, yEnemy - MONSTER_RATE, MONSTER_HITBOX) == 0) {
+                                        yEnemy -= MONSTER_RATE;
+                                        definiteUpOrDown = 0;
+                                        changed = 1;
+                                    }
+                                }
+                                if (definiteRightOrLeft == 1) {
+                                    if (xEnemy < xPlayer && blockCheck(xEnemy + MONSTER_RATE, yEnemy) == 0 && checkNextSpaceForOtherEnemies(i, xEnemy + MONSTER_RATE, yEnemy, enemyTypeBlockCapablities) == 0 && wallCheck(xEnemy + MONSTER_RATE, yEnemy, MONSTER_HITBOX) == 0) {
+                                        xEnemy += MONSTER_RATE;
+                                        definiteRightOrLeft = 0;
+                                        changed = 1;
+                                    } else if (xEnemy > xPlayer && blockCheck(xEnemy - MONSTER_RATE, yEnemy) == 0 && checkNextSpaceForOtherEnemies(i, xEnemy - MONSTER_RATE, yEnemy, enemyTypeBlockCapablities) == 0) {
+                                        xEnemy -= MONSTER_RATE;
+                                        definiteRightOrLeft = 0;
+                                        changed = 1;
+                                    }
+                                }
+
+                                if (definiteUpOrDown != 1 && definiteRightOrLeft != 1 && changed == 0) {
+                                    if (xEnemy < xPlayer && blockCheck(xEnemy + MONSTER_RATE, yEnemy) == 0 && checkNextSpaceForOtherEnemies(i, xEnemy + MONSTER_RATE, yEnemy, enemyTypeBlockCapablities) == 0) {
+                                        xEnemy += MONSTER_RATE;
+                                        if (wallCheck(xEnemy, yEnemy, MONSTER_HITBOX) == 1) {
+                                            xEnemy -= MONSTER_RATE;
+                                        }
+                                    } else if (xEnemy > xPlayer && blockCheck(xEnemy - MONSTER_RATE, yEnemy) == 0 && checkNextSpaceForOtherEnemies(i, xEnemy - MONSTER_RATE, yEnemy, enemyTypeBlockCapablities) == 0) {
+                                        xEnemy -= MONSTER_RATE;
+                                        if (wallCheck(xEnemy, yEnemy, MONSTER_HITBOX) == 1) {
+                                            xEnemy += MONSTER_RATE;
+                                        }
+                                    } else if (yEnemy < yPlayer && blockCheck(xEnemy, yEnemy + MONSTER_RATE) == 0 && checkNextSpaceForOtherEnemies(i, xEnemy, yEnemy + MONSTER_RATE, enemyTypeBlockCapablities) == 0) {
+                                        yEnemy += MONSTER_RATE;
+                                        if (wallCheck(xEnemy, yEnemy, MONSTER_HITBOX) == 1) {
+                                            yEnemy -= MONSTER_RATE;
+                                        }
+                                    } else if (yEnemy > yPlayer && blockCheck(xEnemy, yEnemy - MONSTER_RATE) == 0 && checkNextSpaceForOtherEnemies(i, xEnemy, yEnemy - MONSTER_RATE, enemyTypeBlockCapablities) == 0) {
+                                        yEnemy -= MONSTER_RATE;
+                                        if (wallCheck(xEnemy, yEnemy, MONSTER_HITBOX) == 1) {
+                                            yEnemy += MONSTER_RATE;
+                                        }
+
+
+
+                                        //dROP and dUOP change to 1
+
+                                        //checks to see if block is below or above enemy
+                                    } else if (blockCheck(xEnemy + MONSTER_RATE, yEnemy) == 1 || blockCheck(xEnemy - MONSTER_RATE, yEnemy) == 1) {
+                                        if (wallCheck(xEnemy, yEnemy - MONSTER_RATE, MONSTER_HITBOX) == 0 && checkNextSpaceForOtherEnemies(i, xEnemy, yEnemy - MONSTER_RATE, enemyTypeBlockCapablities) == 0) {
+                                            yEnemy -= MONSTER_RATE;
+                                            definiteRightOrLeft = 1;
+                                        } else if (wallCheck(xEnemy, yEnemy + MONSTER_RATE, MONSTER_HITBOX) == 0 && checkNextSpaceForOtherEnemies(i, xEnemy, yEnemy + MONSTER_RATE, enemyTypeBlockCapablities) == 0) {
+                                            yEnemy += MONSTER_RATE;
+                                            definiteRightOrLeft = 1;
+                                        }
+
+                                        //checks to see if blocks is left or right of enemy
+                                    } else if (blockCheck(xEnemy, yEnemy + MONSTER_RATE) == 1 || blockCheck(xEnemy, yEnemy - MONSTER_RATE) == 1) {
+                                        if (wallCheck(xEnemy, yEnemy - MONSTER_RATE, MONSTER_HITBOX) == 0 && checkNextSpaceForOtherEnemies(i, xEnemy - MONSTER_RATE, yEnemy, enemyTypeBlockCapablities) == 0) {
+                                            xEnemy -= MONSTER_RATE;
+                                            definiteUpOrDown = 1;
+                                        } else if (wallCheck(xEnemy, yEnemy + MONSTER_RATE, MONSTER_HITBOX) == 0 && checkNextSpaceForOtherEnemies(i, xEnemy + MONSTER_RATE, yEnemy, enemyTypeBlockCapablities) == 0) {
+                                            xEnemy += MONSTER_RATE;
+                                            definiteUpOrDown = 1;
+                                        }
+                                    }
+                                    changed = 1;
+                                }
+                            }
+
+                            dUOP[i + " status"] = definiteUpOrDown;
+                            dROP[i + " status"] = definiteRightOrLeft;
+
+                            changed = 0;
+
+                            var enemy = enemyTypes[i];
+                            remove(enemy);
+                            enemy.setPosition(xEnemy, yEnemy);
+                            add(enemy);
+                            monsterCoords[i + "x"] = xEnemy;
+                            monsterCoords[i + "y"] = yEnemy;
+                        }
+                    }
+
+                    function enemyPrint(array) {
+                        /*
+    Actions:
+    prints array of enemies to random locations
+    */
+                        for (var i = 0; i < array.length; i++) {
+                            if (array[i] == 0) {
+                                //land enemy
+                                var x = Randomizer.nextInt(0, 6);
+                                var newX = (x * (basicFloor2.getWidth() / 7)) + basicFloor2.getX();
+                                var y = Randomizer.nextInt(0, 6);
+                                var newY = (y * (basicFloor2.getWidth() / 7)) + basicFloor2.getY();
+                                var land = new Rectangle(MONSTER_HITBOX, MONSTER_HITBOX);
+                                land.setColor(Color.green);
+                                land.setPosition(newX, newY);
+                                monsterCoords[i + "x"] = newX;
+                                monsterCoords[i + "y"] = newY;
+                                add(land);
+                                array[i] = land;
+                                enemyTypeBlockCapablities[i] = "land";
+                            } else {
+                                //flying enemy
+                                var x = Randomizer.nextInt(0, 6);
+                                var newX = (x * (basicFloor2.getWidth() / 7)) + basicFloor2.getX();
+                                var y = Randomizer.nextInt(0, 6);
+                                var newY = (y * (basicFloor2.getWidth() / 7)) + basicFloor2.getY();
+                                var fly = new Rectangle(MONSTER_HITBOX, MONSTER_HITBOX);
+                                fly.setColor(Color.red);
+                                fly.setPosition(newX, newY);
+                                monsterCoords[i + "x"] = newX;
+                                monsterCoords[i + "y"] = newY;
+                                add(fly);
+                                array[i] = fly;
+                                enemyTypeBlockCapablities[i] = "fly";
+                            }
+                        }
+                    }
+
+                    function playerCreate(x, y) {
+                        /*
+    Actions:
+    spawns in player's hitbox
+    */
+                        player = new Rectangle(PLAYER_HITBOX, PLAYER_HITBOX);
+                        playerCoords["x"] = x;
+                        playerCoords["y"] = y;
+                        player.setPosition(x, y);
+                        player.setColor(Color.black);
+                        add(player);
+                    }
+
+                    function boxCreation(x, y) {
+                        /*
+    Important:
+    takes into account the box's measurements so that the x and y coords are in the center
+    Action:
+    when used, takes x and y coord and creates an unmovable box
+    */
+                        blocks = new Rectangle(BOX_MEASUREMENTS, BOX_MEASUREMENTS);
+                        blocks.setPosition(x, y);
+                        blocks.setColor(Color.blue);
+                        add(blocks);
+
+                        blocksCoords[x] = y;
+                    }
+
+                    function walkingEnemies() {
+                        /*
+    Constants:
+    walk at constant rate towards player; wallCheck; playerCheck; blockCheck
+    Actions:
+    first x coord alignment; second y coord alignment;
+    */
+                    }
+
+                    function flyingEnemies() {
+                        /*
+    Constants:
+    walk at constant rate towards player; wallCheck; playerCheck;
+    Actions:
+    first x coord alignment; second y coord alignment;
+    */
+
+                    }
+
+                    function wallCheck(x, y, width) {
+                        /*
+    Constants:
+    check to see next movement will overlap with northWall, southWall, eastWall and westWall
+    Actions if True:
+    returns 1 which means that there should be no movement
+    */
+                        if (x + width == basicFloor2.getX() || x == basicFloor2.getX() + basicFloor2.getWidth()) {
+                            return 1;
+                        } else if (y + width == basicFloor2.getY() || y == basicFloor2.getY() + basicFloor2.getHeight()) {
+                            return 1;
+                        } else {
+                            return 0;
+                        }
+                    }
+
+                    function playerCheck() {
+                        /*
+    Constants:
+    checks to see if enemy's hitbox overlaps the player's
+    Actions if True:
+    enemy attacks player
+    */
+                    }
+
+                    function blockCheck(x, y) {
+                        /*
+    Constants:
+    checks to see if the player's hitbox overlaps a block
+    Actions if True:
+    returns 1, which results in no movement
+    */
+                        if (blocksCoords[x] == y) {
+                            return 1;
+                        } else {
+                            return 0;
+                        }
+                    }
+
+                    function door() {
+                        /*
+    Constants:
+    checks to see if player's hitbox overlaps with the door
+    Actions if True:
+    move to next room and removes previous graphics/enemies
+    */
+                    }
+
+                    function playerAttack() {
+                        /*
+    Action:
+    when space bar is pressed, attack enemy
+    */
+                    }
+
+                    function chooseEnemies() {
+                        /*
+    Action:
+    chooses the enemies at random for each room using a randomizer for 0 and 1
+    with 0 representing land enemy and 1 representing flying enemy; returns number
+    of 1s
+    */
+                        var monsterNums = [];
+                        for (var i = 0; i < NUM_MONSTERS; i++) {
+                            var newMonster = Randomizer.nextInt(0, 1);
+                            monsterNums.push(newMonster);
+                        }
+                        return monsterNums;
+                    }
+
+
+    if (typeof start === 'function') {
+        start();
+    }
+};
+</script>
+
+
+</body></html>
